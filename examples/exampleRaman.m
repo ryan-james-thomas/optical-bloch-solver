@@ -4,23 +4,23 @@
 %   some Raman Rabi flopping
 %
 op = opticalSystem('Rb87','D2');
-op.laser1.setGaussBeam(50e-3,10e-3)...
+op.laser1.setGaussBeam(750e-3,10e-3)...
     .setPolarization([0,0,1],'spherical')...
-    .setStates([2,0],[2,0],-2e9);
-op.laser2.setGaussBeam(50e-3,10e-3)...
+    .setStates([2,0],[3,0],6.834e9 - 1.320317e9);
+op.laser2.setGaussBeam(750e-3,10e-3)...
     .setPolarization([0,0,1],'spherical')...
-    .setStates([1,0],[2,0],-2e9+3.502e3);  %Note the AC Stark shift
+    .setStates([1,0],[3,0],6.834e9 - 1.320317e9 + 6.882e3);
 
-th = 0*pi/180;
+th = 0;
 ph = 0;
-op.setMagneticField(250e-3,[sin(th)*cos(ph),sin(th)*sin(ph),cos(th)]);
+op.setMagneticField(10e-3,[sin(th)*cos(ph),sin(th)*sin(ph),cos(th)]);
 op.initPop(2) = 1;
 
 tmp = 2*pi*1e2*ones(8,8)*0;
 tmp = tmp - diag(diag(tmp));
 op.decay(1:8,1:8) = tmp;
 
-op.integrate(0.1e-6,50e-6);
+op.integrate(0.1e-6,10e-6);
 
 t0 = op.t;
 %%

@@ -3,26 +3,24 @@
 %   This demonstrates how to use the optical-bloch-solver classes to solve
 %   for steady-state spectra
 %
-op = opticalSystem('Rb87','D2');
-op.laser1.setIntensity(1*16)...
-    .setPolarization([0,0,1],'spherical')...
-    .setStates([2,0],[3,0],0);
-op.laser2.setIntensity(16)...
+op = opticalSystem('Rb87','D1');
+op.laser1.setIntensity(1e-2*16)...
+    .setPolarization([1,0,0],'linear')...
+    .setStates([2,0],[2,0],1e9);
+op.laser2.setIntensity(1600)...
     .setPolarization([0,1,0],'linear')...
-    .setStates([1,0],[2,0],0);
+    .setStates([1,0],[2,0],1e9);
 
-th = 10*pi/180;ph = 0;
-op.setMagneticField(100e-3,[sin(th)*cos(ph),sin(th)*sin(ph),cos(th)]);
+th = 0;ph = 0;
+op.setMagneticField(1,[sin(th)*cos(ph),sin(th)*sin(ph),cos(th)]);
 
-D = linspace(-600e6,600e6,300);
+D = 5e6*linspace(-1,1,500);
 Pg = zeros(op.transition.ground.numStates,numel(D));
 Pe = zeros(op.transition.excited.numStates,numel(D));
 susc = zeros(3,numel(D));
 for nn = 1:numel(D)
-    op.laser1.detuning = D(nn);
-    op.refresh;
-%     op.decay(1:8,1:8) = 2*pi*1e1;
-    op.solveSteadyState;
+    op.laser1.detuning = 1e9 + 0.13e6 + D(nn);
+    op.refresh.solveSteadyState;
     Pg(:,nn) = op.getPopulations('ground');
     Pe(:,nn) = op.getPopulations('excited');
     susc(:,nn) = op.getPolarization('linear');
@@ -39,8 +37,17 @@ xlabel('Frequency [MHz]');
 ylabel('Population');
 
 figure(2);clf;
+subplot(1,2,1);
 plot(D/1e6,real(susc),'-','linewidth',2);
 xlabel('Frequency [MHz]');
 ylabel('Absorbance');
+% legend('-1','0','+1');
+legend('x','y','z');
+
+subplot(1,2,2);
+plot(D/1e6,imag(susc),'-','linewidth',2);
+xlabel('Frequency [MHz]');
+ylabel('Reactance');
+% legend('-1','0','+1');
 legend('x','y','z');
 

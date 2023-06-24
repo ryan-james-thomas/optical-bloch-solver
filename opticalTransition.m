@@ -50,6 +50,13 @@ classdef opticalTransition < handle
             self.excited.solveHyperfine(B);
         end
         
+        function d = calcBareDipole(self)
+            %CALCBAREDIPOLE Calculates the "bare" dipole element, which
+            %then gets multiplied by angular momentum coupling factors, to
+            %get the state-pair-dependent dipole moment
+            d = sqrt((3*pi*const.eps0*const.hbar*(self.wavelength/(2*pi))^3)*(2*self.excited.J+1)/(2*self.ground.J+1)*self.totalDecay);
+        end
+        
         function self = makeCoupling(self)
             %MAKECOUPLING Creates the coupling, dipole, q, and dipole
             %matrices
@@ -98,13 +105,13 @@ classdef opticalTransition < handle
             % We've only calculated the upper halves of these matrices, so
             % now make them Hermitian
             %
-            self.coupling = self.coupling+self.coupling';
+            self.coupling = sqrt(2)*(self.coupling+self.coupling');
             self.qMatrix = self.qMatrix+self.qMatrix';
             %
             % The dipole matrix is actually <a|er|b>, while the decay
             % matrix is |coupling|^2*TotalDecay
             %
-            self.dipole = self.coupling*sqrt((3*pi*const.eps0*const.hbar*(self.wavelength/(2*pi))^3)*(2*self.excited.J+1)/(2*self.ground.J+1)*self.totalDecay);
+            self.dipole = self.coupling*self.calcBareDipole;
             self.decay = abs(self.coupling).^2*self.totalDecay;
         end
         
