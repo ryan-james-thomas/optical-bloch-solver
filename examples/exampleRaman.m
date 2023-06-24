@@ -15,6 +15,22 @@ th = 0;
 ph = 0;
 op.setMagneticField(10e-3,[sin(th)*cos(ph),sin(th)*sin(ph),cos(th)]);
 op.initPop(2) = 1;
+%
+% This bit of code attempts to calculate optical pumping rates and
+% therefore decoherence associated with each laser addressing the other
+% ground state manifold
+%
+R1 = op.getOffResonantPumping(op.laser1);
+R2 = op.getOffResonantPumping(op.laser2);
+R = R1 + R2;
+op.makeTotalLindblad;
+for gg = 1:op.transition.ground.numStates
+    for ee = 1:op.transition.excited.numStates
+        eShift = ee + op.transition.ground.numStates;
+        op.decay(eShift,gg) = R(eShift,gg);
+        op.lindblad = op.lindblad + op.makeLindblad(eShift,gg);
+    end
+end
 
 tmp = 2*pi*1e2*ones(8,8)*0;
 tmp = tmp - diag(diag(tmp));
@@ -25,7 +41,7 @@ op.integrate(0.1e-6,10e-6);
 t0 = op.t;
 %%
 op.t = t0*1e6;
-figure(3);clf;
+figure(4);clf;
 subplot(2,1,1);
 op.plotPopulations('ground');
 xlabel('Time [us]');
